@@ -1,0 +1,39 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main  
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout código fuente
+        uses: actions/checkout@v2
+
+      - name: Configurar Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.9
+
+      - name: Instalar dependencias
+        run: pip install -r app/requirements.txt
+
+      - name: Ejecutar pruebas unitarias
+        run: python -m unittest discover test
+
+      - name: Análisis de código estático con SonarCloud
+        env:
+          SONAR_TOKEN: 95df35c0878ce91cb3dc3c52baec03dae852a94e
+        run: sonar-scanner
+
+      - name: Crear imagen Docker
+        run: docker build -t alvaro2042/pruebaDevco:latest ./app
+
+      - name: Iniciar sesión en DockerHub
+        run: echo dckr_pat_sIvPJ_rFBpwicBNIi8JTrEaF5ZQ | docker login --username alvaro2042 --password-stdin
+
+      - name: Publicar imagen Docker en DockerHub
+        run: docker push alvaro2042/pruebaDevco:latest
